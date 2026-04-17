@@ -137,7 +137,7 @@ export default async function AdminPage() {
               {matches?.map(m => (
                 <tr key={m.id} className="border-t border-gray-100 hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-900">
-                    {m.user1?.name ?? '\u2014'} \u00d7 {m.user2?.name ?? '\u2014'}
+                    {m.user1?.name ?? '—'} × {m.user2?.name ?? '—'}
                   </td>
                   <td className="px-4 py-3 text-gray-600 max-w-xs">
                     <p className="truncate">{m.topic}</p>

@@ -7,27 +7,55 @@ type User = { id: string; name: string; email: string }
 export default function CreateMatchModal({ users }: { users: User[] }) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   function handleSubmit(formData: FormData) {
+    const user1Id = formData.get('user1_id') as string
+    const user2Id = formData.get('user2_id') as string
+
+    if (user1Id === user2Id) {
+      setErrorMsg('Please select two different users.')
+      return
+    }
+
+    setErrorMsg(null)
     startTransition(async () => {
-      await createMatch(formData)
-      setOpen(false)
+      try {
+        await createMatch(formData)
+        setOpen(false)
+      } catch {
+        setErrorMsg('Failed to create match. Please try again.')
+      }
     })
+  }
+
+  function handleOpen() {
+    setErrorMsg(null)
+    setOpen(true)
   }
 
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         className="bg-black text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
       >
         + Create Match
       </button>
 
       {open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
+        >
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <h2 className="text-lg font-semibold text-gray-900 mb-5">Create a collab match</h2>
+
+            {errorMsg && (
+              <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                {errorMsg}
+              </div>
+            )}
 
             <form action={handleSubmit} className="space-y-4">
               <div>
@@ -95,7 +123,7 @@ export default function CreateMatchModal({ users }: { users: User[] }) {
                   disabled={isPending}
                   className="flex-1 bg-black text-white py-2.5 rounded-full text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
                 >
-                  {isPending ? 'Creating\u2026' : 'Create + notify both \u2192'}
+                  {isPending ? 'Creating…' : 'Create + notify both →'}
                 </button>
               </div>
             </form>
