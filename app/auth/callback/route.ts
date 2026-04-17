@@ -7,10 +7,14 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    await supabase.auth.exchangeCodeForSession(code)
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (exchangeError) {
+      return NextResponse.redirect(`${origin}/?error=auth_failed`)
+    }
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
+    if (user?.email) {
       const { data: profile } = await supabase
         .from('users')
         .select('onboarded')

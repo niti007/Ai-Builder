@@ -23,13 +23,13 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
   const protectedPaths = ['/dashboard', '/onboarding', '/match', '/admin']
   const isProtected = protectedPaths.some(p => pathname.startsWith(p))
 
-  if (!user && isProtected) {
+  if ((!user || authError) && isProtected) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
@@ -37,5 +37,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|auth).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|auth/callback).*)'],
 }
