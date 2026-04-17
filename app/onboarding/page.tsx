@@ -2,20 +2,35 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { saveProfile } from '@/lib/actions/profile'
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/')
+
+  const { error } = await searchParams
 
   return (
     <main className="max-w-lg mx-auto px-6 py-16">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Set up your profile</h1>
       <p className="text-gray-500 mb-8">Tell us what you want to build. Takes 60 seconds.</p>
 
+      {error && (
+        <div className="mb-5 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          {error === 'save_failed'
+            ? 'Could not save your profile. Please try again.'
+            : 'Please fill in all fields correctly.'}
+        </div>
+      )}
+
       <form action={saveProfile} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Your name</label>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Your name</label>
           <input
+            id="name"
             name="name"
             required
             defaultValue={user.user_metadata?.full_name ?? ''}
@@ -24,25 +39,27 @@ export default async function OnboardingPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+          <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Role</label>
           <select
+            id="role"
             name="role"
             required
             className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black"
           >
             <option value="">Pick your role</option>
-            <option>AI engineer</option>
-            <option>Founder</option>
-            <option>Content creator</option>
-            <option>Student</option>
+            <option value="AI engineer">AI engineer</option>
+            <option value="Founder">Founder</option>
+            <option value="Content creator">Content creator</option>
+            <option value="Student">Student</option>
           </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="goals" className="block text-sm font-medium text-gray-700 mb-1">
             What do you want to ship?
           </label>
           <textarea
+            id="goals"
             name="goals"
             required
             rows={3}
@@ -52,15 +69,16 @@ export default async function OnboardingPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Preferred call time</label>
+          <label htmlFor="preferred_time" className="block text-sm font-medium text-gray-700 mb-1">Preferred call time</label>
           <select
+            id="preferred_time"
             name="preferred_time"
             required
             className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black"
           >
-            <option>Morning</option>
-            <option>Afternoon</option>
-            <option>Evening</option>
+            <option value="Morning">Morning</option>
+            <option value="Afternoon">Afternoon</option>
+            <option value="Evening">Evening</option>
           </select>
         </div>
 
