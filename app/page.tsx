@@ -1,10 +1,22 @@
 import { createClient } from '@/lib/supabase/server'
 import { signInWithGoogle } from '@/lib/actions/auth'
 
+type MatchUser = { name: string; role: string; allow_feature: boolean } | null
+
+type FeaturedOutcome = {
+  id: string
+  title: string
+  description: string
+  matches: {
+    user1: MatchUser
+    user2: MatchUser
+  } | null
+}
+
 export default async function SplashPage() {
   const supabase = await createClient()
 
-  const { data: outcomes } = await supabase
+  const { data: outcomes, error: outcomesError } = await supabase
     .from('outcomes')
     .select(`
       id, title, description,
@@ -15,6 +27,9 @@ export default async function SplashPage() {
     `)
     .eq('featured', true)
     .limit(3)
+    .returns<FeaturedOutcome[]>()
+
+  if (outcomesError) console.error('[SplashPage] outcomes query failed:', outcomesError)
 
   return (
     <main className="min-h-screen">
@@ -30,6 +45,7 @@ export default async function SplashPage() {
         <form action={signInWithGoogle}>
           <button
             type="submit"
+            aria-label="Join with Google"
             className="inline-flex items-center gap-2 bg-black text-white px-8 py-3.5 rounded-full font-medium text-lg hover:bg-gray-800 transition-colors"
           >
             Join with Google →
@@ -46,13 +62,13 @@ export default async function SplashPage() {
           </h2>
           <div className="space-y-3">
             {outcomes.map((outcome) => {
-              const m = outcome.matches as any
+              const m = outcome.matches
               const showNames = m?.user1?.allow_feature && m?.user2?.allow_feature
               return (
                 <div key={outcome.id} className="border border-gray-100 rounded-2xl p-5 hover:border-gray-300 transition-colors">
                   <p className="font-semibold text-gray-900">{outcome.title}</p>
                   <p className="text-sm text-gray-500 mt-1">{outcome.description}</p>
-                  {showNames && (
+                  {showNames && m?.user1 && m?.user2 && (
                     <p className="text-xs text-gray-400 mt-2">
                       {m.user1.name} ({m.user1.role}) × {m.user2.name} ({m.user2.role})
                     </p>
