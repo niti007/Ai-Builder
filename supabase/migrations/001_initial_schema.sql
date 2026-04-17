@@ -49,6 +49,28 @@ create policy "Users can upsert own profile" on public.users
 create policy "Users can update own profile" on public.users
   for update using (auth.jwt() ->> 'email' = email);
 
--- Authenticated users can insert outcomes and update match status
-create policy "Users can insert outcomes" on public.outcomes for insert with check (true);
-create policy "Users can update match status" on public.matches for update using (true);
+-- Only match participants can insert/update (tightened from permissive true-based policies)
+-- If this migration was already applied to a live DB, run the following in the Supabase SQL editor first:
+--   drop policy "Users can insert outcomes" on public.outcomes;
+--   drop policy "Users can update match status" on public.matches;
+-- Then re-run the two create policy statements below.
+
+-- Only match participants can insert an outcome
+create policy "Participants can insert outcomes" on public.outcomes
+  for insert with check (
+    exists (
+      select 1 from public.matches m
+      where m.id = match_id
+        and (
+          m.user1_id = (select id from public.users where email = auth.jwt() ->> 'email')
+          or m.user2_id = (select id from public.users where email = auth.jwt() ->> 'email')
+        )
+    )
+  );
+
+-- Only match participants can update the status of their own match
+create policy "Participants can update match status" on public.matches
+  for update using (
+    user1_id = (select id from public.users where email = auth.jwt() ->> 'email')
+    or user2_id = (select id from public.users where email = auth.jwt() ->> 'email')
+  );

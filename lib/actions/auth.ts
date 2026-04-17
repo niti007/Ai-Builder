@@ -19,4 +19,5 @@ export async function signInWithGoogle() {
 
   if (error) redirect(`/?error=oauth_failed`)
   if (data.url) redirect(data.url)
+  redirect('/?error=oauth_failed')
 }

@@ -16,7 +16,7 @@ export default function OnboardingError({
   return (
     <main className="max-w-lg mx-auto px-6 py-16 text-center">
       <h1 className="text-2xl font-bold text-gray-900 mb-3">Something went wrong</h1>
-      <p className="text-gray-500 mb-6">We couldn't save your profile. Please try again.</p>
+      <p className="text-gray-500 mb-6">We couldn&apos;t save your profile. Please try again.</p>
       <div className="flex gap-3 justify-center">
         <button
           onClick={reset}
