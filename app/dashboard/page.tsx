@@ -38,7 +38,7 @@ export default async function DashboardPage() {
           {match.scheduled_time && (
             <p className="text-sm text-gray-500 mb-4">
               Suggested call:{' '}
-              {new Date(match.scheduled_time).toLocaleDateString('en-GB', {
+              {new Date(match.scheduled_time).toLocaleString('en-GB', {
                 weekday: 'short',
                 day: 'numeric',
                 month: 'short',
