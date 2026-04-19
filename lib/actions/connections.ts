@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
-export async function sendConnectionRequest(formData: FormData) {
+export async function sendConnectionRequest(formData: FormData): Promise<void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user?.email) redirect('/')
@@ -15,7 +15,10 @@ export async function sendConnectionRequest(formData: FormData) {
   const to_user_id = formData.get('to_user_id') as string
   const message = (formData.get('message') as string | null)?.trim().slice(0, 300)
 
-  if (!to_user_id || !message) return { error: 'invalid' }
+  if (!to_user_id || !message) {
+    console.warn('sendConnectionRequest: invalid input')
+    return
+  }
 
   // check no existing request either direction
   const { data: existing } = await supabase
@@ -26,19 +29,25 @@ export async function sendConnectionRequest(formData: FormData) {
     )
     .maybeSingle()
 
-  if (existing) return { error: 'already_exists' }
+  if (existing) {
+    console.warn('sendConnectionRequest: request already exists')
+    return
+  }
 
   const { error } = await supabase
     .from('connection_requests')
     .insert({ from_user_id: me.id, to_user_id, message })
 
-  if (error) return { error: 'db_error' }
+  if (error) {
+    console.error('sendConnectionRequest: db error', error)
+    return
+  }
 
   revalidatePath('/builders')
   revalidatePath('/dashboard')
 }
 
-export async function acceptConnectionRequest(formData: FormData) {
+export async function acceptConnectionRequest(formData: FormData): Promise<void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user?.email) redirect('/')
@@ -57,7 +66,10 @@ export async function acceptConnectionRequest(formData: FormData) {
     .eq('status', 'pending')
     .single()
 
-  if (!req) return { error: 'not_found' }
+  if (!req) {
+    console.warn('acceptConnectionRequest: request not found', request_id)
+    return
+  }
 
   await supabase
     .from('connection_requests')
@@ -77,7 +89,7 @@ export async function acceptConnectionRequest(formData: FormData) {
   redirect('/dashboard')
 }
 
-export async function declineConnectionRequest(formData: FormData) {
+export async function declineConnectionRequest(formData: FormData): Promise<void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user?.email) redirect('/')
