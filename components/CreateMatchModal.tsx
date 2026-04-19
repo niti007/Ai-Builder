@@ -12,118 +12,71 @@ export default function CreateMatchModal({ users }: { users: User[] }) {
   function handleSubmit(formData: FormData) {
     const user1Id = formData.get('user1_id') as string
     const user2Id = formData.get('user2_id') as string
-
-    if (user1Id === user2Id) {
-      setErrorMsg('Please select two different users.')
-      return
-    }
-
+    if (user1Id === user2Id) { setErrorMsg('Select two different users.'); return }
     setErrorMsg(null)
     startTransition(async () => {
-      try {
-        await createMatch(formData)
-        setOpen(false)
-      } catch {
-        setErrorMsg('Failed to create match. Please try again.')
-      }
+      try { await createMatch(formData); setOpen(false) }
+      catch { setErrorMsg('Failed to create match. Try again.') }
     })
-  }
-
-  function handleOpen() {
-    setErrorMsg(null)
-    setOpen(true)
   }
 
   return (
     <>
-      <button
-        onClick={handleOpen}
-        className="bg-black text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
-      >
-        + Create Match
+      <button onClick={() => { setErrorMsg(null); setOpen(true) }} className="btn-gradient px-5 py-3 text-[11px]">
+        + CREATE_MATCH
       </button>
 
       {open && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          style={{ background: 'rgba(0,0,0,0.85)' }}
           onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
         >
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h2 className="text-lg font-semibold text-gray-900 mb-5">Create a collab match</h2>
+          <div className="w-full max-w-md border border-[#222] bg-[#0a0a0a] p-6">
+            <div className="text-[9px] text-[#ff2d00] tracking-[0.2em] uppercase mb-4">Create_match /</div>
+            <h2
+              style={{ fontFamily: 'var(--font-anton)', fontSize: '24px', letterSpacing: '0.02em', textTransform: 'uppercase' }}
+              className="text-white mb-6"
+            >
+              New Collab
+            </h2>
 
             {errorMsg && (
-              <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              <div className="mb-4 text-[11px] px-4 py-3 border border-[#ff2d00]/30 bg-[#ff2d00]/5 text-[#ff6644]">
                 {errorMsg}
               </div>
             )}
 
             <form action={handleSubmit} className="space-y-4">
+              {[
+                { id: 'user1_id', label: 'User 1' },
+                { id: 'user2_id', label: 'User 2' },
+              ].map(({ id, label }) => (
+                <div key={id}>
+                  <label htmlFor={id} className="block text-[9px] text-[#444] tracking-[0.2em] uppercase mb-2">{label}</label>
+                  <select id={id} name={id} required className="glass-input">
+                    <option value="">Select user</option>
+                    {users.map(u => <option key={u.id} value={u.id}>{u.name} — {u.email}</option>)}
+                  </select>
+                </div>
+              ))}
+
               <div>
-                <label htmlFor="user1_id" className="block text-sm font-medium text-gray-700 mb-1">User 1</label>
-                <select
-                  id="user1_id"
-                  name="user1_id"
-                  required
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                >
-                  <option value="">Select a user</option>
-                  {users.map(u => (
-                    <option key={u.id} value={u.id}>{u.name} — {u.email}</option>
-                  ))}
-                </select>
+                <label htmlFor="topic" className="block text-[9px] text-[#444] tracking-[0.2em] uppercase mb-2">Collab goal</label>
+                <input id="topic" name="topic" required placeholder="e.g. Build an AI Chrome extension" className="glass-input" />
               </div>
 
               <div>
-                <label htmlFor="user2_id" className="block text-sm font-medium text-gray-700 mb-1">User 2</label>
-                <select
-                  id="user2_id"
-                  name="user2_id"
-                  required
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                >
-                  <option value="">Select a user</option>
-                  {users.map(u => (
-                    <option key={u.id} value={u.id}>{u.name} — {u.email}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-1">Collab goal</label>
-                <input
-                  id="topic"
-                  name="topic"
-                  required
-                  placeholder="e.g. Build an AI Chrome extension for LinkedIn"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="scheduled_time" className="block text-sm font-medium text-gray-700 mb-1">Suggested call time</label>
-                <input
-                  id="scheduled_time"
-                  name="scheduled_time"
-                  type="datetime-local"
-                  required
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                />
+                <label htmlFor="scheduled_time" className="block text-[9px] text-[#444] tracking-[0.2em] uppercase mb-2">Call time</label>
+                <input id="scheduled_time" name="scheduled_time" type="datetime-local" required className="glass-input" style={{ colorScheme: 'dark' }} />
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="flex-1 border border-gray-200 text-gray-700 py-2.5 rounded-full text-sm font-medium hover:bg-gray-50"
-                >
-                  Cancel
+                <button type="button" onClick={() => setOpen(false)} className="btn-ghost flex-1 py-3 text-[11px]">
+                  CANCEL
                 </button>
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="flex-1 bg-black text-white py-2.5 rounded-full text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
-                >
-                  {isPending ? 'Creating…' : 'Create + notify both →'}
+                <button type="submit" disabled={isPending} className="btn-gradient flex-1 py-3 text-[11px]">
+                  {isPending ? 'CREATING…' : 'CREATE →'}
                 </button>
               </div>
             </form>

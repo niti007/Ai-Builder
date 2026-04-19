@@ -1,18 +1,32 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Anton, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const anton = Anton({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-anton',
+})
+
+const mono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '600'],
+  variable: '--font-mono',
+})
 
 export const metadata: Metadata = {
-  title: 'AI Builder Collab',
+  title: 'Builder Collab',
   description: '1–2 week micro-collabs for AI engineers, founders, and creators.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-screen bg-white text-gray-900 antialiased`}>
+      <body
+        className={`${anton.variable} ${mono.variable} min-h-screen antialiased`}
+        style={{ fontFamily: 'var(--font-mono), monospace' }}
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>
